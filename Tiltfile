@@ -1,10 +1,13 @@
 # Build
+gradlew = "./gradlew"
+expected_ref = "$EXPECTED_REF"
+if os.name == "nt":
+  gradlew = "gradlew.bat"
+  expected_ref = "%EXPECTED_REF%"
+
 custom_build(
-    # Name of the container image
     ref = 'catalog-service',
-    # Command to build the container image
-    command = './gradlew bootBuildImage --imageName $EXPECTED_REF',
-    # Files to watch that trigger a new build
+    command = gradlew + ' bootBuildImage --imageName ' + expected_ref,
     deps = ['build.gradle', 'src']
 )
 
