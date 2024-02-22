@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,8 +39,8 @@ class BookRepositoryJdbcTests {
         Iterable<Book> actualBooks = bookRepository.findAll();
 
         assertThat(StreamSupport.stream(actualBooks.spliterator(), true)
-                .filter(book -> book.isbn().equals(book1.isbn()) || book.isbn().equals(book2.isbn()))
-                .collect(Collectors.toList())).hasSize(2);
+            .filter(book -> book.isbn().equals(book1.isbn()) || book.isbn().equals(book2.isbn()))
+            .collect(Collectors.toList())).hasSize(2);
     }
 
     @Test
@@ -86,6 +87,26 @@ class BookRepositoryJdbcTests {
         bookRepository.deleteByIsbn(bookIsbn);
 
         assertThat(jdbcAggregateTemplate.findById(persistedBook.id(), Book.class)).isNull();
+    }
+
+    @Test
+    void whenCreateBookNotAuthenticatedThenNoAuditMetadata() {
+        var bookToCreate = Book.of("1232343456", "Title",
+            "Author", 12.90, "Polarsophia");
+        var createdBook = bookRepository.save(bookToCreate);
+
+        assertThat(createdBook.createdBy()).isNull();
+        assertThat(createdBook.lastModifiedBy()).isNull();
+    }
+
+    @Test
+    @WithMockUser("john")
+    void whenCreateBookAuthenticatedThenAuditMetadata() {
+        var bookToCreate = Book.of("1232343457", "Title", "Author", 12.90, "Polarsophia");
+        var createdBook = bookRepository.save(bookToCreate);
+
+        assertThat(createdBook.createdBy()).isEqualTo("john");
+        assertThat(createdBook.lastModifiedBy()).isEqualTo("john");
     }
 
 }

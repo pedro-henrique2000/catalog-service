@@ -1,4 +1,3 @@
-# Build
 gradlew = "./gradlew"
 expected_ref = "$EXPECTED_REF"
 if os.name == "nt":
@@ -11,8 +10,6 @@ custom_build(
     deps = ['build.gradle', 'src']
 )
 
-# Deploy
 k8s_yaml(['k8s/deployment.yml', 'k8s/service.yml'])
 
-# Manage
 k8s_resource('catalog-service', port_forwards=['9001'])
