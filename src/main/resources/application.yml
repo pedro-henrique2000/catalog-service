@@ -38,12 +38,23 @@ spring:
     hikari:
       connection-timeout: 2000 #ms
       maximum-pool-size: 5
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
 management:
   endpoints:
     web:
       exposure:
-        include: refresh
-
+        include: prometheus,health,flyway,sessions
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 polar:
   greeting: Welcome to the local book catalog!
